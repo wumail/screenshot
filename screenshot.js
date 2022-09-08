@@ -3,7 +3,7 @@ const path = require("path");
 const inquirer = require("inquirer");
 
 const ora = require("ora");
-const spinner = ora("Loading...");
+const spinner = ora({ text: "wait a minute...", spinner: "clock" });
 
 const puppeteer = require("puppeteer");
 const port = "8002";
@@ -17,7 +17,7 @@ const waitTime = (time = 100) => {
 };
 
 let scrape = async (path) => {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: true });
   path = path.replace(/\'|\s/g, "");
   fs.readdir(path, async (err, files) => {
     if (err) {
