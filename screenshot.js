@@ -17,7 +17,7 @@ const waitTime = (time = 100) => {
 };
 
 let scrape = async (path) => {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: false });
   path = path.replace(/\'|\s/g, "");
   fs.readdir(path, async (err, files) => {
     if (err) {
@@ -26,7 +26,8 @@ let scrape = async (path) => {
     }
     const dirs = files.filter((fileName) => !fileName.includes("."));
     for (let i = 0; i < dirs.length; i++) {
-      const page = await browser.newPage();
+      const pages = await browser.pages();
+      const page = pages[0];
       try {
         spinner.start();
         await page.setViewport({
@@ -35,11 +36,14 @@ let scrape = async (path) => {
           deviceScaleFactor: 1,
         });
         await page.goto(`http://localhost:${port}/#${dirs[i]}`);
-        let rhs = await page.$("#ide-preview");
-        await waitTime(5000);
-        await rhs.screenshot({
+        await waitTime(2000);
+        const rs = await page.$eval(".urlDiv", (el) => el.textContent);
+        const iframe = await browser.newPage();
+        await iframe.goto(rs);
+        await iframe.screenshot({
           path: `./screenshots/${dirs[i]}.png`,
         });
+        await page.close();
         spinner.succeed(`Screenshot of ${dirs[i]} saved!`);
       } catch (error) {
         spinner.error(`Could not save screenshot of ${dirs[i]}!`);
